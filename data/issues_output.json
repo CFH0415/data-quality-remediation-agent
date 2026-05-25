@@ -1,0 +1,16 @@
+[
+  {
+    "column": "loan_amnt",
+    "issue_type": "Null Spike",
+    "severity": "HIGH",
+    "detail": "Null rate: 40% (40192/100000 rows)",
+    "sample_values": "[35000.0, 10400.0, 16000.0]"
+  },
+  {
+    "column": "funded_amnt",
+    "issue_type": "Statistical Outlier",
+    "severity": "MEDIUM",
+    "detail": "10077 outlier(s) (10.1% of rows). IQR bounds: [-13500.00, 46500.00]",
+    "sample_values": "[9999999.0, 9999999.0, 9999999.0, 9999999.0, 9999999.0]"
+  }
+]

@@ -1,0 +1,95 @@
+{
+  "quality_score": {
+    "before": 49.9,
+    "after": 100.0,
+    "delta": 50.1
+  },
+  "issues": [
+    {
+      "input": {
+        "column": "loan_amnt",
+        "issue_type": "Null Spike",
+        "severity": "HIGH",
+        "detail": "Null rate: 40% (40192/100000 rows)",
+        "sample_values": "[35000.0, 10400.0, 16000.0]"
+      },
+      "diagnosis": {
+        "root_cause": "The high null rate in loan_amnt may be due to data entry errors or failures in data integration processes leading to incomplete records.",
+        "business_impact": "This could result in inaccurate analytics and reporting, affecting loan decision-making models and potentially leading to financial losses.",
+        "priority_score": 8,
+        "affected_rows_percent": 40.0
+      },
+      "remediation": {
+        "suggestions": [
+          {
+            "option": 1,
+            "action": "Replace nulls with median",
+            "confidence": 85,
+            "rationale": "Replacing null values with the median is a reliable method to maintain data distribution and reduce bias in analytics.",
+            "caveats": "This assumes that the distribution of loan amounts is not heavily skewed.",
+            "pyspark_code": "median_value = df.approxQuantile('loan_amnt', [0.5], 0.01)[0]\ndf = df.na.fill({'loan_amnt': median_value})"
+          },
+          {
+            "option": 2,
+            "action": "Replace nulls with a fixed value",
+            "confidence": 65,
+            "rationale": "Filling nulls with a fixed value like 0 can be useful to avoid dropping records.",
+            "caveats": "This may negatively impact analytics by introducing outliers or misleading information.",
+            "pyspark_code": "df = df.na.fill({'loan_amnt': 0})"
+          },
+          {
+            "option": 3,
+            "action": "Decline changes",
+            "confidence": 100,
+            "rationale": "No remediation will be applied, and this decision is recorded for auditing purposes.",
+            "caveats": "The issue with null values remains unresolved.",
+            "pyspark_code": "# No change applied to df"
+          }
+        ]
+      }
+    },
+    {
+      "input": {
+        "column": "funded_amnt",
+        "issue_type": "Statistical Outlier",
+        "severity": "MEDIUM",
+        "detail": "10077 outlier(s) (10.1% of rows). IQR bounds: [-13500.00, 46500.00]",
+        "sample_values": "[9999999.0, 9999999.0, 9999999.0, 9999999.0, 9999999.0]"
+      },
+      "diagnosis": {
+        "root_cause": "There may be data entry errors or system malfunctions leading to extreme values being recorded for funded amounts, possibly due to incorrect handling of financial transactions.",
+        "business_impact": "Such outliers can skew analytical results, leading to misinformed decisions and flawed predictive modeling, which may affect financial forecasting and risk assessment.",
+        "priority_score": 5,
+        "affected_rows_percent": 10.1
+      },
+      "remediation": {
+        "suggestions": [
+          {
+            "option": 1,
+            "action": "Replace outliers with IQR bounds",
+            "confidence": 85,
+            "rationale": "This method caps the outliers to the defined IQR bounds, preserving the majority of valid data.",
+            "caveats": "Assumes that the excess outliers are erroneous and the rest of the data is valid.",
+            "pyspark_code": "df = df.withColumn('funded_amnt', F.when(df['funded_amnt'] < -13500.00, -13500.00).when(df['funded_amnt'] > 46500.00, 46500.00).otherwise(df['funded_amnt']))"
+          },
+          {
+            "option": 2,
+            "action": "Drop rows with outlier funded_amnt",
+            "confidence": 65,
+            "rationale": "Removing extreme outliers will clean up data, reducing their influence on analysis.",
+            "caveats": "This may lead to loss of significant data and should be considered if outliers are likely erroneous.",
+            "pyspark_code": "df = df.filter((df['funded_amnt'] >= -13500.00) & (df['funded_amnt'] <= 46500.00))"
+          },
+          {
+            "option": 3,
+            "action": "Decline changes",
+            "confidence": 100,
+            "rationale": "No remediation will be applied at this time, but the decision is recorded for future reference.",
+            "caveats": "The outlier issue remains unresolved and may impact future analyses.",
+            "pyspark_code": "# No change applied to df"
+          }
+        ]
+      }
+    }
+  ]
+}

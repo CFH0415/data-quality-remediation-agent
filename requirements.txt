@@ -1,0 +1,8 @@
+streamlit>=1.43
+pandas>=2.2
+numpy>=1.26
+plotly>=5.24
+pyarrow>=16.0
+openai>=1.30
+python-dotenv>=1.0
+databricks-connect==15.4.*
